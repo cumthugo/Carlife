@@ -2,8 +2,27 @@ import os
 import re
 import commands
 import time
+import socket
+import carlife_pb2 as pb
 
 header_str_of_adb = ''
+def start_send_msg_cmd_to_phone():
+    s = socket.socket()
+    host = "127.0.0.1"
+    port = 7200
+    print 'host',host
+    s.connect((host,port))
+    print host,'connected'
+    data = '\x00\x04\x00\x00\x00\x01\x80\x01'
+
+    version = pb.CarLifeProtocolVersion()
+    version.majorVersion = 2
+    version.minorVersion = 0
+    data += version.SerializeToString()
+    s.send(data)
+    print 'data:',data
+    print s.recv(1024)
+    
 def start_connect():
     global header_str_of_adb
     print 'wait for phone injection...'
@@ -38,6 +57,7 @@ def start_connect():
         #launch carlife
         print 'start launch carlife...'
         temp_str = commands.getoutput(header_str_of_adb + "shell am start -n com.baidu.carlife/.CarlifeActivity")
+        start_send_msg_cmd_to_phone()
     else:
         print 'there is no carlife in you phone, please download it, thanks.'
 
